@@ -1,0 +1,7 @@
+{
+  "name": "package-control",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

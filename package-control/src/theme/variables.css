@@ -1,0 +1,41 @@
+/* Package Control — soft blue shell, high-contrast actions */
+
+:root {
+  --ion-color-primary: #2563eb;
+  --ion-color-primary-rgb: 37, 99, 235;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2157d0;
+  --ion-color-primary-tint: #3b73ed;
+
+  --ion-background-color: #e8f1fc;
+  --ion-background-color-rgb: 232, 241, 252;
+  --ion-text-color: #162032;
+  --ion-text-color-rgb: 22, 32, 50;
+
+  --ion-toolbar-background: #d8e8fa;
+  --ion-toolbar-color: var(--ion-text-color);
+
+  --ion-item-background: #ffffff;
+
+  --lock-banner-locked-bg: #ffc9d8;
+  --lock-banner-locked-color: #7a0f2e;
+  --lock-banner-unlocked-bg: #b8f0c8;
+  --lock-banner-unlocked-color: #0b4d24;
+  --lock-banner-unknown-bg: #cfd9e8;
+  --lock-banner-unknown-color: #3d4a5c;
+}
+
+.ion-palette-dark {
+  --ion-background-color: #121c2c;
+  --ion-text-color: #e8eef8;
+  --ion-toolbar-background: #1a2740;
+  --ion-item-background: #1e2d45;
+
+  --lock-banner-locked-bg: #5c2234;
+  --lock-banner-locked-color: #ffb3c9;
+  --lock-banner-unlocked-bg: #1f4d32;
+  --lock-banner-unlocked-color: #9ef0b5;
+  --lock-banner-unknown-bg: #2a3548;
+  --lock-banner-unknown-color: #b8c5da;
+}
