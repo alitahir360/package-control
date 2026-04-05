@@ -81,10 +81,11 @@ constexpr uint8_t PIN_MIN_LEN = 4;
 constexpr uint8_t PIN_MAX_LEN = 8;
 constexpr uint8_t LCD_COLS = 16;
 
-// Motor travel (AccelStepper steps). FULL4WIRE: ~1024 steps ≈ one output shaft revolution on 28BYJ-48.
-// Increase for more travel; if it turns the wrong way, use negative OPEN or swap IN1↔IN4 on the driver.
+// One distance for both directions: CLOSED at 0, OPEN at -TRAVEL (flipped vs +TRAVEL so open/close match app).
+// Tune STEPPER_TRAVEL_STEPS only (e.g. 512–1024). Same |steps| every full open or full close.
+constexpr long STEPPER_TRAVEL_STEPS = 768;
 constexpr long STEPPER_POS_CLOSED = 0;
-constexpr long STEPPER_POS_OPEN = 1024;
+constexpr long STEPPER_POS_OPEN = -STEPPER_TRAVEL_STEPS;
 
 /** Logical state for STATUS? (OPEN / LOCK / keypad unlock). */
 bool boxUnlocked = false;
@@ -349,8 +350,9 @@ void setup() {
   digitalWrite(STEP_IN3, LOW);
   digitalWrite(STEP_IN4, LOW);
 
-  stepper.setMaxSpeed(1000);
-  stepper.setAcceleration(600);
+  // Slightly conservative to reduce skipped steps (which look like “close moves less than open”).
+  stepper.setMaxSpeed(900);
+  stepper.setAcceleration(450);
   stepper.setMinPulseWidth(20);
   stepper.setCurrentPosition(STEPPER_POS_CLOSED);
 
