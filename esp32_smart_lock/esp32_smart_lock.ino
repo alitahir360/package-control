@@ -1,4 +1,9 @@
-#include <LiquidCrystal.h>
+/*
+ * ESP32 smart lock — BLE, keypad, I2C 16x2 LCD, 28BYJ-48 stepper.
+ * Install "LiquidCrystal I2C" by Frank de Brabander (Library Manager).
+ */
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <AccelStepper.h>
 #include <BLEDevice.h>
@@ -7,13 +12,10 @@
 #include <BLE2902.h>
 
 // ---------- Pin map (ESP32 DEVKIT V1) ----------
-// LCD 16x2 (4-bit): avoid UART0 (GPIO1/3) and input-only pins (34,35,36,39).
-//  constexpr uint8_t LCD_RS = 19;
-//  constexpr uint8_t LCD_E  = 18;
-//  constexpr uint8_t LCD_D4 = 23;
-//  constexpr uint8_t LCD_D5 = 5;
-//  constexpr uint8_t LCD_D6 = 17;
-//  constexpr uint8_t LCD_D7 = 16;
+// 16x2 LCD over I2C (PCF8574 backpack). Try 0x27 or 0x3F if the display is blank.
+constexpr uint8_t LCD_I2C_ADDR = 0x27;
+constexpr uint8_t I2C_SDA = 21;
+constexpr uint8_t I2C_SCL = 22;
 
 const byte ROWS = 4;  // four rows
 const byte COLS = 4;  // four columns
@@ -21,7 +23,7 @@ const byte COLS = 4;  // four columns
 byte kpRowPins[ROWS] = { 13, 12, 14, 27 };   // keypad pins 1–4
 byte kpColPins[COLS] = { 26, 25, 33, 32 };     // keypad pins 5–8
 
-// 28BYJ-48 via ULN2003: wire ESP32 → driver IN1..IN4 in order (13→IN1, 15→IN2, …).
+// 28BYJ-48 via ULN2003: IN1..IN4 → STEP_IN1..STEP_IN4 (see below). AccelStepper uses IN1,IN3,IN2,IN4 coil order.
 // AccelStepper FULL4WIRE expects coil order; swapping IN2/IN3 in software matches most 28BYJ-48 cables.
 constexpr uint8_t STEP_IN1 = 15;
 constexpr uint8_t STEP_IN2 = 2;
@@ -34,7 +36,7 @@ constexpr uint8_t STEP_IN4 = 5;
 #define NUS_TX_UUID           "6E400003-B5A3-F393-E0A9-E50E24DCCA7E"  // notify to phone
 
 // ---------- Hardware ----------
-//LiquidCrystal lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2);
 
 // Scramble fix for the wiring above: each cell is the physical label for that (row,col) scan index.
 const char keys[ROWS][COLS] = {
@@ -133,11 +135,11 @@ void setActivePin(const String& p) {
   inputBuffer = "";
   feedbackUntil = 0;
   feedbackMode = FB_NONE;
- //  lcd.clear();
- //  lcd.setCursor(0, 0);
- //  lcd.print("PIN ready (once)");
- //  lcd.setCursor(0, 1);
- //  lcd.print("Enter & press D");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("PIN ready (once)");
+  lcd.setCursor(0, 1);
+  lcd.print("Enter & press D");
   delay(800);
   showEnterPrompt();
   sendBleStatus("OK:PINSET");
@@ -209,26 +211,28 @@ void handleBleCommand(String cmd) {
 }
 
 void showEnterPrompt() {
- //  lcd.clear();
- //  lcd.setCursor(0, 0);
- //  lcd.print("Enter PIN:");
- //  lcd.setCursor(0, 1);
- //  lcd.print(inputBuffer);
-  for (int i = inputBuffer.length(); i < LCD_COLS; i++) ;//lcd.print(' ');
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Enter PIN:");
+  lcd.setCursor(0, 1);
+  lcd.print(inputBuffer);
+  for (int i = inputBuffer.length(); i < LCD_COLS; i++) {
+    lcd.print(' ');
+  }
 }
 
 void showFeedback() {
-  //lcd.clear();
+  lcd.clear();
   if (feedbackMode == FB_GRANTED) {
-   //  lcd.setCursor(0, 0);
-   //  lcd.print("PIN correct");
-   //  lcd.setCursor(0, 1);
-   //  lcd.print("Access granted");
+    lcd.setCursor(0, 0);
+    lcd.print("PIN correct");
+    lcd.setCursor(0, 1);
+    lcd.print("Access granted");
   } else if (feedbackMode == FB_DENIED) {
-   //  lcd.setCursor(0, 0);
-   //  lcd.print("PIN wrong");
-   //  lcd.setCursor(0, 1);
-   //  lcd.print("Access denied");
+    lcd.setCursor(0, 0);
+    lcd.print("PIN wrong");
+    lcd.setCursor(0, 1);
+    lcd.print("Access denied");
   }
 }
 
@@ -236,23 +240,23 @@ void trySubmitPin() {
   if (pinConsumed || activePin.length() == 0) {
     feedbackMode = FB_DENIED;
     feedbackUntil = millis() + 2500;
-   //  lcd.clear();
-   //  lcd.setCursor(0, 0);
-   //  lcd.print("No active PIN");
-   //  lcd.setCursor(0, 1);
-   //  lcd.print("Use app first");
-   //  sendBleStatus("NO_PIN");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("No active PIN");
+    lcd.setCursor(0, 1);
+    lcd.print("Use app first");
+    sendBleStatus("NO_PIN");
     inputBuffer = "";
     return;
   }
   if (inputBuffer.length() < PIN_MIN_LEN) {
     feedbackMode = FB_DENIED;
     feedbackUntil = millis() + 2000;
-   //  lcd.clear();
-   //  lcd.setCursor(0, 0);
-   //  lcd.print("Too short");
-   //  lcd.setCursor(0, 1);
-   //  lcd.print("Min 4 digits");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Too short");
+    lcd.setCursor(0, 1);
+    lcd.print("Min 4 digits");
     inputBuffer = "";
     delay(1500);
     showEnterPrompt();
@@ -318,7 +322,11 @@ void setupBle() {
 void setup() {
   Serial.begin(115200);
 
-  //lcd.begin(16, 2);
+  Wire.begin(I2C_SDA, I2C_SCL);
+  Wire.setClock(100000);
+  lcd.init();
+  lcd.backlight();
+
   keypad.setDebounceTime(30);
   keypad.setHoldTime(500);
 
@@ -340,11 +348,11 @@ void setup() {
   showEnterPrompt();
   setupBle();
 
- //  lcd.clear();
- //  lcd.setCursor(0, 0);
- //  lcd.print("BLE: SmartLock");
- //  lcd.setCursor(0, 1);
- //  lcd.print("Waiting phone...");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("BLE: SmartLock");
+  lcd.setCursor(0, 1);
+  lcd.print("Waiting phone...");
   delay(1200);
   showEnterPrompt();
 }
@@ -379,13 +387,15 @@ void loop() {
       } else if (key >= '0' && key <= '9') {
         if (inputBuffer.length() < PIN_MAX_LEN) {
           inputBuffer += key;
-          //lcd.setCursor(0, 1);
+          lcd.setCursor(0, 1);
           if (inputBuffer.length() <= LCD_COLS) {
-            //lcd.print(inputBuffer);
-            for (int i = inputBuffer.length(); i < LCD_COLS; i++); //lcd.print(' ');
+            lcd.print(inputBuffer);
+            for (int i = inputBuffer.length(); i < LCD_COLS; i++) {
+              lcd.print(' ');
+            }
           } else {
             String tail = inputBuffer.substring(inputBuffer.length() - LCD_COLS);
-            //lcd.print(tail);
+            lcd.print(tail);
           }
         }
       }
