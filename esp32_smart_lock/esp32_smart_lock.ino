@@ -63,11 +63,11 @@ constexpr uint8_t PIN_MIN_LEN = 4;
 constexpr uint8_t PIN_MAX_LEN = 8;
 constexpr uint8_t LCD_COLS = 16;
 
-// One distance for both directions: CLOSED at 0, OPEN at -TRAVEL (flipped vs +TRAVEL so open/close match app).
+// One distance for both directions: CLOSED at 0, OPEN at +TRAVEL (sign sets rotation vs your mechanics; flip to -TRAVEL if reversed).
 // Tune STEPPER_TRAVEL_STEPS only (e.g. 512–1024). Same |steps| every full open or full close.
 constexpr long STEPPER_TRAVEL_STEPS = 768;
 constexpr long STEPPER_POS_CLOSED = 0;
-constexpr long STEPPER_POS_OPEN = -STEPPER_TRAVEL_STEPS;
+constexpr long STEPPER_POS_OPEN = STEPPER_TRAVEL_STEPS;
 
 /** Logical state for STATUS? (OPEN / LOCK / keypad unlock). */
 bool boxUnlocked = false;

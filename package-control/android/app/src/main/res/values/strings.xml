@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Package Control</string>
+    <string name="title_activity_main">Package Control</string>
+    <string name="package_name">io.packagecontrol.app</string>
+    <string name="custom_url_scheme">io.packagecontrol.app</string>
+</resources>
