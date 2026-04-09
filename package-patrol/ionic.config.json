@@ -1,0 +1,7 @@
+{
+  "name": "package-patrol",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

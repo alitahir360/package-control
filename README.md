@@ -11,7 +11,7 @@ A science-fair style **smart lock** for a small box: a phone app connects over *
 - **Keypad + LCD** — Digits appear on the second line of the display; **D** submits the PIN; **\*** clears entry. The LCD shows **Access granted** or **Access denied** (and related messages).
 - **Status** — The app can query whether the box is logically **LOCKED** or **UNLOCKED**.
 
-Firmware lives in **`esp32_smart_lock/`**. The companion mobile/web app is in **`package-control/`** (Vue + Ionic + Capacitor, using `@capacitor-community/bluetooth-le`).
+Firmware lives in **`esp32_smart_lock/`**. The companion mobile/web app is in **`package-patrol/`** (Vue + Ionic + Capacitor, using `@capacitor-community/bluetooth-le`).
 
 ---
 
@@ -20,7 +20,7 @@ Firmware lives in **`esp32_smart_lock/`**. The companion mobile/web app is in **
 | Path | Purpose |
 |------|--------|
 | `esp32_smart_lock/esp32_smart_lock.ino` | Arduino sketch for the ESP32 |
-| `package-control/` | Ionic/Vue app: connect, open/lock, PIN generation, history |
+| `package-patrol/` | Ionic/Vue app: connect, open/lock, PIN generation, history |
 
 ---
 
@@ -147,12 +147,12 @@ In the sketch:
 
 ---
 
-## Companion app (`package-control`)
+## Companion app (`package-patrol`)
 
 Vue 3 + Ionic + Capacitor project for **iOS/Android** (and web where BLE is supported).
 
 ```bash
-cd package-control
+cd package-patrol
 npm install
 npm run dev
 ```
